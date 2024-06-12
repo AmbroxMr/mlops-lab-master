@@ -24,7 +24,7 @@ nltk.download('wordnet')
 nltk.download('stopwords')
 nltk.download('punkt')
 
-mlflow.set_tracking_uri("http://127.0.0.1:32000")
+mlflow.set_tracking_uri("http://host.docker.internal:32000")
 
 df = pd.read_csv('AI_Human_1k.csv')
 df_shuffled = df.sample(frac=1, random_state=42).reset_index(drop=True)
