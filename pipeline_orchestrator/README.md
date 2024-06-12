@@ -12,3 +12,6 @@ Run the Prefect server, specifying the connection URL to the Postgres database:
 For deploy the Prefect Flow (after completing `retraining_pipeline.py`)
 `docker build -t deploy-retrain-flow .`
 `docker run deploy-retrain-flow`
+
+> [!NOTE]  
+> The flow in retraining_pipeline.py (in method ingest_data_from_s3) assumes the data is uploaded in `play.min.io` public minio. The politics of this playgroud is to delete the data after some days. If you want to test the flow after this period, you need to upload the data again. Partial data is available in `/data` folder in this repository, and the full data in [Kaggle's AI vs human text](https://www.kaggle.com/datasets/shanegerami/ai-vs-human-text/data)
