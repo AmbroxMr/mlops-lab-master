@@ -6,4 +6,4 @@ Pull the MLflow Docker image:
 
 Run the MLflow Docker container:
 
-`docker run -d -p 32000:5000 ghcr.io/mlflow/mlflow:v2.8.1 mlflow server`
+`docker run -d -p 32000:5000 ghcr.io/mlflow/mlflow:v2.8.1 mlflow server -h 0.0.0.0`
