@@ -1,5 +1,7 @@
+# Import punctuation symbols
 from string import punctuation
 
+# Import required libraries
 import joblib
 import mlflow
 import nltk
@@ -20,28 +22,41 @@ def text_preprocess(text):
     clean_tokens = [lemmatizer.lemmatize(token.lower()) for token in tokens if token.isalpha() and token.lower() not in stop_words]
     return " ".join(clean_tokens)
 
+# Download necessary NLTK resources
 nltk.download('wordnet')
 nltk.download('stopwords')
 nltk.download('punkt')
 
-mlflow.set_tracking_uri("http://host.docker.internal:32000")
+# Set MLflow tracking URI
+# For Docker Desktop
+# mlflow.set_tracking_uri("http://host.docker.internal:32000")
+# For others
+mlflow.set_tracking_uri("http://localhost:32000")
 
+# Load dataset containing text and binary labels (0 = human, 1 = AI)
 df = pd.read_csv('AI_Human_1k.csv')
+
+# Shuffle the dataset for randomness
 df_shuffled = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
+# Split dataset into training and test sets (80% train, 20% test)
 train_df, test_df = train_test_split(df_shuffled, test_size=0.2, random_state=42)
 
+# Start MLflow experiment run
 experiment_id = mlflow.get_experiment_by_name("text_AI").experiment_id
 with mlflow.start_run(experiment_id=experiment_id):
 
+    # Apply preprocessing to text in both training and test sets
     train_df.loc[:, 'clean_text'] = train_df['text'].apply(text_preprocess)
     test_df.loc[:, 'clean_text'] = test_df['text'].apply(text_preprocess)
 
+    # Define features (X) and labels (y)
     X_train = train_df['clean_text']
     X_test = test_df['clean_text']
     y_train = train_df['generated']
     y_test = test_df['generated']
 
+    # Convert text into TF-IDF feature vectors with n-grams (1,2)
     vectorizer = TfidfVectorizer(
         max_features=2000,
         min_df=5,
@@ -51,23 +66,29 @@ with mlflow.start_run(experiment_id=experiment_id):
     X_train = vectorizer.fit_transform(X_train).toarray()
     X_test = vectorizer.transform(X_test).toarray()
 
+    # Train logistic regression classifier
     model = LogisticRegression()
     model.fit(X_train, y_train)
 
+    # Log the model with MLflow for versioning and reproducibility
     mlflow.sklearn.log_model(
         sk_model=model,
         artifact_path="text_AI_model",
         registered_model_name="text_AI_model_logistic_regression",
     )
 
+    # Generate predictions on the test set
     y_pred = model.predict(X_test)
 
+    # Print classification performance metrics
     classification_report_str = classification_report(y_test, y_pred)
     print("Classification Report for Logistic Regression:\n", classification_report_str)
 
+    # Save model and vectorizer locally for reuse
     joblib.dump(model, 'logistic_regression_model.joblib')
     joblib.dump(vectorizer, 'tfidf_vectorizer.joblib')
 
+    # Save full, train, and test datasets to CSV
     df_shuffled.to_csv('data.csv', index=False)
     train_df.to_csv('train_data.csv', index=False)
     test_df.to_csv('test_data.csv', index=False)
