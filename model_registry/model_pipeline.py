@@ -3,7 +3,6 @@ from string import punctuation
 
 # Import required libraries
 import joblib
-import mlflow
 import nltk
 import pandas as pd
 from nltk.corpus import stopwords
@@ -59,13 +58,6 @@ X_test = vectorizer.transform(X_test).toarray()
 # Train logistic regression classifier
 model = LogisticRegression()
 model.fit(X_train, y_train)
-
-# Log the model with MLflow for versioning and reproducibility
-mlflow.sklearn.log_model(
-    sk_model=model,
-    artifact_path="text_AI_model",
-    registered_model_name="text_AI_model_logistic_regression",
-)
 
 # Generate predictions on the test set
 y_pred = model.predict(X_test)
