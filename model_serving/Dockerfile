@@ -22,7 +22,6 @@ EXPOSE 9000
 ENV MODEL_NAME="TextAIWrapper"
 ENV SERVICE_TYPE="MODEL"
 
-#ENV MLFLOW_TRACKING_URI="http://host.docker.internal:32000"
-ENV MLFLOW_TRACKING_URI="http://localhost:32000"
+ENV MLFLOW_TRACKING_URI="http://host.docker.internal:32000"
 
 CMD exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE

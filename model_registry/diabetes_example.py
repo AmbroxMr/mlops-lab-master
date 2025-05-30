@@ -10,9 +10,9 @@ mlflow.set_tracking_uri("http://localhost:32000")
 mlflow.sklearn.autolog()
 
 # Load the training dataset
-db = load_diabetes()
+data, target = load_diabetes()
 
-X_train, X_test, y_train, y_test = train_test_split(db.data, db.target)
+X_train, X_test, y_train, y_test = train_test_split(data, target)
 
 rf = RandomForestRegressor(n_estimators=100, max_depth=6, max_features=3)
 # MLflow triggers logging automatically upon model fitting
