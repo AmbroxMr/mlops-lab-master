@@ -55,6 +55,7 @@ def vectorize_data(clean_text: pd.Series) -> pd.Series:
         ngram_range=(1, 2),
     )
     text_vectorized = vectorizer.fit_transform(clean_text).toarray()
+    joblib.dump(vectorizer, 'tfidf_vectorizer.joblib')
     return text_vectorized
 
 @task
