@@ -4,6 +4,7 @@ import mlflow
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+import time
 
 def text_preprocess(text):
     lemmatizer = WordNetLemmatizer()
@@ -23,10 +24,36 @@ class TextAIWrapper:
         self.model = joblib.load(model_file)
         self.vectorizer = joblib.load(vectorizer_file)
 
+        # Métricas internas
+        self.total_requests = 0
+        self.total_prediction_time = 0
+        self.total_text_length = 0
+        self.prediction_counts = {"AI": 0, "Human": 0}
+
     def predict(self, X, features_names=None):
 
-        X_cleaned =  [text_preprocess(X)]
+        start = time.time()
+        self.total_requests += 1
+        self.total_text_length += len(X)
+
+        X_cleaned = [text_preprocess(X)]
         X_vectorized = self.vectorizer.transform(X_cleaned)
         prediction = self.model.predict(X_vectorized)[0]
 
-        return 'AI' if prediction == 1 else 'Human'
+        prediction_label = 'AI' if prediction == 1 else 'Human'
+        self.prediction_counts[prediction_label] += 1
+
+        self.total_prediction_time += (time.time() - start)
+        return prediction_label
+
+    def metrics(self):
+        avg_prediction_time = self.total_prediction_time / self.total_requests if self.total_requests else 0
+        avg_text_length = self.total_text_length / self.total_requests if self.total_requests else 0
+
+        return [
+            {"type": "COUNTER", "key": "requests_total", "value": self.total_requests},
+            {"type": "COUNTER", "key": "predicted_ai_total", "value": self.prediction_counts["AI"]},
+            {"type": "COUNTER", "key": "predicted_human_total", "value": self.prediction_counts["Human"]},
+            {"type": "GAUGE", "key": "average_prediction_time_seconds", "value": avg_prediction_time},
+            {"type": "GAUGE", "key": "average_input_text_length", "value": avg_text_length}
+        ]
