@@ -19,6 +19,8 @@ RUN python -m nltk.downloader wordnet
 EXPOSE 5000
 EXPOSE 9000
 
+EXPOSE 6000
+
 ENV MODEL_NAME="TextAIWrapper"
 ENV SERVICE_TYPE="MODEL"
 
